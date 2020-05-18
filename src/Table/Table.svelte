@@ -1,8 +1,9 @@
 <script>
-  import TableHeadColumn from './TableHeadColumn.svelte';
-  import TableCell from './TableCell.svelte';
-  import { tick } from 'svelte';
+  import TableCell from "./TableCell.svelte";
+  import TableHead from "./TableHead.svelte";
+  import { tick } from "svelte";
   export let config;
+  export let pinToTop = false;
   export let data;
   export let title;
   let sortType = null;
@@ -24,11 +25,11 @@
           return d[field];
         };
 
-      if (sortType === 'asc') {
+      if (sortType === "asc") {
         sortedData = originalData.sort((a, b) =>
           comparator(accessor(a), accessor(b))
         );
-      } else if (sortType === 'desc') {
+      } else if (sortType === "desc") {
         sortedData = originalData.sort((a, b) =>
           comparator(accessor(b), accessor(a))
         );
@@ -41,11 +42,6 @@
 </script>
 
 <style>
-  .thead {
-    padding: 10px 0;
-    background-color: #f2f2f2;
-  }
-
   .caption {
     caption-side: top;
     padding: 12px;
@@ -87,19 +83,7 @@
       </slot>
     </caption>
   {/if}
-  <thead class="thead">
-    <tr>
-      {#each tableHeads as head}
-        <TableHeadColumn
-          hideMobile={config[head].hideMobile}
-          on:sort={handleSort}
-          sortable={config[head].sortable}
-          field={head}
-          name={config[head].name}
-          align={config[head].align} />
-      {/each}
-    </tr>
-  </thead>
+  <TableHead {tableHeads} {config} onSort={handleSort} {pinToTop} />
   <tbody>
     {#each sortedData || data as item, i}
       <tr class="tr">

@@ -27,11 +27,10 @@
   }
 
   .currency {
-    font-family: 'Helvetica Neue';
+    font-family: "Helvetica Neue";
   }
 
-  td,
-  th {
+  td {
     position: relative;
     padding: 12px 9px;
     line-height: 1.67;
