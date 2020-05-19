@@ -7,6 +7,7 @@
   export let data;
   export let title;
   let sortType = null;
+  let tableRef;
   $: tableHeads = Object.keys(config);
   $: originalData = data.slice();
 
@@ -75,7 +76,7 @@
   }
 </style>
 
-<table class="table">
+<table class="table" bind:this={tableRef}>
   {#if title}
     <caption class="caption">
       <slot name="caption">
@@ -83,7 +84,7 @@
       </slot>
     </caption>
   {/if}
-  <TableHead {tableHeads} {config} onSort={handleSort} {pinToTop} />
+  <TableHead {tableRef} {tableHeads} {config} onSort={handleSort} {pinToTop} />
   <tbody>
     {#each sortedData || data as item, i}
       <tr class="tr">

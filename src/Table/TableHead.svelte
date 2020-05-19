@@ -5,6 +5,7 @@
   export let config;
   export let onSort;
   export let pinToTop = false;
+  export let tableRef;
 
   let shouldPinToTop = false;
   let floatingTh;
@@ -13,7 +14,12 @@
     if (params.pinToTop) {
       const { x, y } = node.getBoundingClientRect();
       const handlePinTrigger = () => {
-        if (window.pageYOffset >= y && !shouldPinToTop) {
+        if (
+          window.pageYOffset >= y &&
+          window.pageYOffset <
+            tableRef.clientHeight + tableRef.offsetTop - node.clientHeight &&
+          !shouldPinToTop
+        ) {
           const theadWidth = node.clientWidth;
           const ths = floatingTh.querySelectorAll("th");
           node
@@ -26,7 +32,11 @@
           floatingTh.style.left = `${x}px`;
           floatingTh.style.width = `${theadWidth}px`;
           shouldPinToTop = true;
-        } else if (window.pageYOffset < y) {
+        } else if (
+          window.pageYOffset < y ||
+          window.pageYOffset >
+            tableRef.clientHeight + tableRef.offsetTop - node.clientHeight
+        ) {
           shouldPinToTop = false;
         }
       };
