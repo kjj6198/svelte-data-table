@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   export let name;
   export let align;
@@ -7,30 +7,28 @@
   export let field;
   export let hideMobile;
 
-  let currentSortType = null;
+  let currentSortType = "none";
 
   function nextState(sortType) {
-    if (sortType === null) {
-      return 'asc';
-    } else if (sortType === 'asc') {
-      return 'desc';
-    } else if (sortType === 'desc') {
-      return null;
+    if (sortType === "none") {
+      return "asc";
+    } else if (sortType === "asc") {
+      return "desc";
+    } else if (sortType === "desc") {
+      return "none";
     }
   }
 
   function handleSortClick(sortType) {
-    return function handle(e) {
-      if (currentSortType === sortType) {
-        return;
-      }
+    if (currentSortType === sortType) {
+      return;
+    }
 
-      currentSortType = sortType;
-      dispatch('sort', {
-        sortType: currentSortType,
-        field
-      });
-    };
+    currentSortType = sortType;
+    dispatch("sort", {
+      sortType: currentSortType,
+      field
+    });
   }
 
   function getClassNames() {
@@ -40,14 +38,30 @@
       return `align-${align}`;
     }
 
-    return '';
+    return "";
+  }
+
+  function getSortName(sortType) {
+    if (sortType === "none") {
+      return "none";
+    } else if (sortType === "desc") {
+      return "descending";
+    } else {
+      return "ascending";
+    }
+  }
+
+  function handleKeydown(e) {
+    e.stopPropagation();
+    if (e.keyCode === 13) {
+      handleSortClick(nextState(currentSortType));
+    }
   }
 
   $: className = getClassNames();
 </script>
 
 <style>
-  td,
   th {
     font-size: 18px;
     color: #424242;
@@ -61,7 +75,6 @@
       display: none;
     }
 
-    td,
     th {
       font-size: 12px;
     }
@@ -79,25 +92,67 @@
   }
 
   .sortable {
+    position: relative;
     cursor: pointer;
+  }
+
+  .sortable > span {
+    position: relative;
+    display: inline-block;
+    padding-right: 1em;
+    user-select: none;
+  }
+
+  .sortable > span:before,
+  .sortable > span:after {
+    display: none;
+    content: "";
+    right: 0;
+    position: absolute;
+    border-style: solid;
+  }
+
+  .desc > span:before {
+    display: block;
+    bottom: 30%;
+    border-width: 5px 5px 0px 5px;
+    border-color: #999 transparent transparent transparent;
+  }
+
+  .asc > span:before {
+    display: block;
+    top: 30%;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #999;
+  }
+
+  .none > span:after {
+    display: block;
+    content: "";
+    bottom: 30%;
+    border-width: 5px 5px 0px 5px;
+    border-color: #999 transparent transparent transparent;
+  }
+  .none > span:before {
+    display: block;
+    top: 30%;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #999;
   }
 </style>
 
 <th
   scope="col"
   data-field={field}
+  aria-sort={sortable && currentSortType}
+  tabindex={sortable ? '0' : null}
+  aria-label={`${name}: activate to sort column ${getSortName(currentSortType)}`}
   class={className}
   class:hideMobile
-  on:click={handleSortClick(nextState(currentSortType))}>
-  {name}
-  {#if sortable}
-    {#if !currentSortType}
-      <span>▲</span>
-      <span>▼</span>
-    {:else if currentSortType === 'asc'}
-      <span>▲</span>
-    {:else if currentSortType === 'desc'}
-      <span>▼</span>
-    {/if}
-  {/if}
+  class:desc={sortable && currentSortType === 'desc'}
+  class:asc={sortable && currentSortType === 'asc'}
+  class:none={sortable && currentSortType === 'none'}
+  on:keydown={sortable ? handleKeydown : null}
+  on:click={() => handleSortClick(nextState(currentSortType))}>
+  <span>{name}</span>
 </th>
