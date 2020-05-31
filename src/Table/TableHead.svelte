@@ -5,6 +5,7 @@
   export let config;
   export let onSort;
   export let pinToTop = false;
+  export let topOffset = 0;
   export let tableRef;
 
   let shouldPinToTop = false;
@@ -12,7 +13,13 @@
 
   function pin(node, params) {
     if (params.pinToTop) {
-      const { x, y } = node.getBoundingClientRect();
+      let { x, y } = node.getBoundingClientRect();
+      const recalculate = () => {
+        const rect = node.getBoundingClientRect();
+        x = rect.x;
+        y = rect.y;
+      };
+
       const handlePinTrigger = () => {
         if (
           window.pageYOffset >= y &&
@@ -28,7 +35,7 @@
               (th, i) => (ths[i].style.minWidth = getComputedStyle(th).width)
             );
 
-          floatingTh.style.top = `0px`; // TODO: top fixed header height?
+          floatingTh.style.top = topOffset + "px";
           floatingTh.style.left = `${x}px`;
           floatingTh.style.width = `${theadWidth}px`;
           shouldPinToTop = true;
@@ -42,9 +49,12 @@
       };
 
       window.addEventListener("scroll", handlePinTrigger, { passive: true });
-
+      window.addEventListener("resize", recalculate);
       return {
-        destory: () => window.removeEventListener("scroll", handlePinTrigger)
+        destory: () => {
+          window.removeEventListener("scroll", handlePinTrigger);
+          window.removeEventListener("resize", recalculate);
+        }
       };
     }
   }
@@ -67,19 +77,21 @@
   }
 </style>
 
-<thead class="thead floating" bind:this={floatingTh} class:shouldPinToTop>
-  <tr>
-    {#each tableHeads as head}
-      <TableHeadColumn
-        hideMobile={config[head].hideMobile}
-        on:sort={onSort}
-        sortable={config[head].sortable}
-        field={head}
-        name={config[head].name}
-        align={config[head].align} />
-    {/each}
-  </tr>
-</thead>
+{#if pinToTop}
+  <thead class="thead floating" bind:this={floatingTh} class:shouldPinToTop>
+    <tr>
+      {#each tableHeads as head}
+        <TableHeadColumn
+          hideMobile={config[head].hideMobile}
+          on:sort={onSort}
+          sortable={config[head].sortable}
+          field={head}
+          name={config[head].name}
+          align={config[head].align} />
+      {/each}
+    </tr>
+  </thead>
+{/if}
 
 <thead class="thead" use:pin={{ pinToTop }}>
   <tr>
